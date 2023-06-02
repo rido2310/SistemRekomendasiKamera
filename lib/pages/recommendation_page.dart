@@ -1161,7 +1161,7 @@ class _RecommendationPageState extends State<RecommendationPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ResultPage(
-                                            waspasResult: rekomendasi(
+                                            waspasTempResult: rekomendasi(
                                               documentSnapshot,
                                               _resolusiFotoValue,
                                               _resolusiVideoValue,
@@ -1429,23 +1429,25 @@ class _RecommendationPageState extends State<RecommendationPage> {
       //       int berat,
       //       int harga,
 
+      final q = 0.5 *
+              ((normalization[0][i] * resolusiFoto.toDouble()) +
+                  (normalization[1][i] * resolusiVideo.toDouble()) +
+                  (normalization[2][i] * iso.toDouble()) +
+                  (normalization[3][i] * baterai.toDouble()) +
+                  (normalization[4][i] * berat.toDouble()) +
+                  (normalization[5][i] * harga.toDouble())) +
+          0.5 *
+              (pow(normalization[0][i], resolusiFoto.toDouble()) +
+                  pow(normalization[1][i], resolusiVideo.toDouble()) +
+                  pow(normalization[2][i], iso.toDouble()) +
+                  pow(normalization[3][i], baterai.toDouble()) +
+                  pow(normalization[4][i], berat.toDouble()) +
+                  pow(normalization[5][i], harga.toDouble()));
+
       hasilWaspas.add(
         [
           productName[i],
-          0.5 *
-                  ((normalization[0][i] * resolusiFoto.toDouble()) +
-                      (normalization[1][i] * resolusiVideo.toDouble()) +
-                      (normalization[2][i] * iso.toDouble()) +
-                      (normalization[3][i] * baterai.toDouble()) +
-                      (normalization[4][i] * berat.toDouble()) +
-                      (normalization[5][i] * harga.toDouble())) +
-              0.5 *
-                  (pow(normalization[0][i], resolusiFoto.toDouble()) +
-                      pow(normalization[1][i], resolusiVideo.toDouble()) +
-                      pow(normalization[2][i], iso.toDouble()) +
-                      pow(normalization[3][i], baterai.toDouble()) +
-                      pow(normalization[4][i], berat.toDouble()) +
-                      pow(normalization[5][i], harga.toDouble())),
+          q,
           [camera[i]],
         ],
       );

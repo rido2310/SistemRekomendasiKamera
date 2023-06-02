@@ -2,15 +2,36 @@ import 'package:camera_market_app/widgets/camera_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ResultPage extends StatelessWidget {
-  const ResultPage({super.key, required this.waspasResult});
+class ResultPage extends StatefulWidget {
+  const ResultPage({super.key, required this.waspasTempResult});
   static const routeName = '/resultPageRoute';
 
-  final List<List> waspasResult;
+  final List<List> waspasTempResult;
+
+  @override
+  State<ResultPage> createState() => _ResultPageState();
+}
+
+class _ResultPageState extends State<ResultPage> {
+  List<List> waspasResult = [];
+  int? limit;
+  bool switchTop5 = false;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        waspasResult = widget.waspasTempResult;
+      });
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final CollectionReference camera = FirebaseFirestore.instance.collection('camera');
+    final CollectionReference camera =
+        FirebaseFirestore.instance.collection('camera');
 
     return Scaffold(
       appBar: AppBar(
@@ -45,53 +66,52 @@ class ResultPage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Container(
-              alignment: Alignment.topLeft,
-              margin: const EdgeInsets.all(18.0),
-              child: const Text(
-                'Rating Terbaik',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20,
-                ),
+            Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Rating Terbaik',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  Switch(
+                    value: switchTop5,
+                    onChanged: (value) {
+                      setState(() {
+                        switchTop5 = value;
+                        limit = value ? 5 : null;
+                      });
+                    },
+                  )
+                ],
               ),
             ),
-
             Flexible(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                 ),
-                itemCount: waspasResult.length,
+                itemCount: limit != null
+                    ? waspasResult.length < limit!
+                        ? waspasResult.length
+                        : limit!
+                    : waspasResult.length,
                 itemBuilder: (context, index) {
-                  final QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot =
-                      waspasResult[index][2][0];
-                  return CameraItem(documentSnapshot: documentSnapshot);
+                  final QueryDocumentSnapshot<Map<String, dynamic>>
+                      documentSnapshot = waspasResult[index][2][0];
+                  // print(documentSnapshot.data());
+                  return CameraItem(
+                    documentSnapshot: documentSnapshot,
+                    q: waspasResult[index][1],
+                  );
                 },
               ),
             ),
-
-            // StreamBuilder(
-            //   stream: camera.snapshots(),
-            //   builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-            //     if (streamSnapshot.hasData) {
-            //       return Flexible(
-            //         child: GridView.builder(
-            //           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            //             crossAxisCount: 2,
-            //           ),
-            //           itemCount: streamSnapshot.data?.docs.length,
-            //           itemBuilder: (context, index) {
-            //             final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
-            //             return CameraItem(documentSnapshot: documentSnapshot);
-            //           },
-            //         ),
-            //       );
-            //     } else {
-            //       return const Center();
-            //     }
-            //   }
-            // ),
           ],
         ),
       ),

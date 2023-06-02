@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 class CameraItem extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot;
+  final double? q;
 
   const CameraItem({
     super.key,
     required this.documentSnapshot,
+    this.q,
   });
 
   @override
@@ -74,6 +76,16 @@ class CameraItem extends StatelessWidget {
                     fontSize: 14,
                   ),
             ),
+            if (q != null)
+              Text(
+                "Q: $q",
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                      fontSize: 14,
+                    ),
+              ),
             Text(
               "Rp. ${documentSnapshot['harga']}",
               textAlign: TextAlign.center,
