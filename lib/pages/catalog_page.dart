@@ -11,16 +11,62 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  Stream<QuerySnapshot<Map<String, dynamic>>> camera =
-      FirebaseFirestore.instance.collection('camera').snapshots();
+  final cameraCollection = FirebaseFirestore.instance.collection('camera');
+  final TextEditingController searchInputController = TextEditingController();
+
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> cameraList = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> cameraTempList = [];
+  bool isLoading = true;
+
+  Future<void> getCamera() async {
+    isLoading = true;
+    final result = await cameraCollection.get();
+
+    setState(() {
+      cameraList = result.docs;
+      cameraList.sort((a, b) => (a.data()['namaProduk'] as String)
+          .compareTo((b.data()['namaProduk'] as String)));
+      cameraTempList = result.docs;
+      cameraTempList.sort((a, b) => (a.data()['namaProduk'] as String)
+          .compareTo((b.data()['namaProduk'] as String)));
+      isLoading = false;
+    });
+  }
 
   void _onTapFilterCamera(String merek) {
     setState(() {
-      camera = FirebaseFirestore.instance
-          .collection('camera')
-          .where("merek", isEqualTo: merek)
-          .snapshots();
+      if (searchInputController.text.isNotEmpty) {
+        cameraList = cameraTempList
+            .where((item) =>
+                item.data()['merek'] == merek &&
+                (item.data()['namaProduk'] as String)
+                    .contains(searchInputController.text))
+            .toList();
+      } else {
+        cameraList = cameraTempList
+            .where((item) => item.data()['merek'] == merek)
+            .toList();
+      }
+
+      cameraTempList.sort((a, b) => (a.data()['namaProduk'] as String)
+          .compareTo((b.data()['namaProduk'] as String)));
     });
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      getCamera();
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    searchInputController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -60,6 +106,38 @@ class _CatalogPageState extends State<CatalogPage> {
         ),
         child: Column(
           children: [
+            TextFormField(
+              controller: searchInputController,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                labelText: "Search camera",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24.0),
+                  borderSide: const BorderSide(),
+                ),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      searchInputController.clear();
+                      cameraList = cameraTempList;
+                    });
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  cameraList = cameraTempList
+                      .where((item) =>
+                          (item.data()['namaProduk'] as String).contains(value))
+                      .toList();
+                });
+              },
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
             Container(
               alignment: Alignment.topLeft,
               child: const Text(
@@ -171,31 +249,25 @@ class _CatalogPageState extends State<CatalogPage> {
             const SizedBox(
               height: 10,
             ),
-            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: camera,
-                builder: (context, streamSnapshot) {
-                  if (streamSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  return Flexible(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                      ),
-                      itemCount: streamSnapshot.data?.docs.length,
-                      itemBuilder: (context, index) {
-                        final QueryDocumentSnapshot<Map<String, dynamic>>
-                            documentSnapshot = streamSnapshot.data!.docs[index];
-                        // final List<DocumentSnapshot> documentSnapshot = streamSnapshot.data!.docs;
-                        return CameraItem(documentSnapshot: documentSnapshot);
-                      },
-                    ),
-                  );
-                }),
+            if (isLoading)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
+            if (!isLoading)
+              Flexible(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                  ),
+                  itemCount: cameraList.length,
+                  itemBuilder: (context, index) {
+                    final QueryDocumentSnapshot<Map<String, dynamic>>
+                        documentSnapshot = cameraList[index];
+
+                    return CameraItem(documentSnapshot: documentSnapshot);
+                  },
+                ),
+              ),
           ],
         ),
       ),
