@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailPage extends StatefulWidget {
-  final DocumentSnapshot documentSnapshot;
+  final DocumentSnapshot<Map<String, dynamic>> documentSnapshot;
 
   const DetailPage({super.key, required this.documentSnapshot});
 
@@ -13,6 +14,62 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
   final CollectionReference camera =
       FirebaseFirestore.instance.collection('camera');
+
+  bool isFavorite = false;
+
+  Future<void> getFavorite() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final getFavorites = prefs.getStringList("favorites");
+    if (getFavorites == null) {
+      return;
+    }
+
+    setState(() {
+      isFavorite = getFavorites
+          .where((item) => item == widget.documentSnapshot.id)
+          .isNotEmpty;
+    });
+  }
+
+  Future<void> addRemoveFavorite() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final getFavorites = prefs.getStringList("favorites");
+    if (getFavorites == null) {
+      final List<String> result = [];
+      result.add(widget.documentSnapshot.id);
+      prefs.setStringList("favorites", result);
+      setState(() {
+        isFavorite = true;
+      });
+      return;
+    }
+    final List<String> result = getFavorites;
+
+    if (isFavorite) {
+      result.removeWhere((item) => item == widget.documentSnapshot.id);
+      prefs.setStringList("favorites", result);
+      setState(() {
+        isFavorite = false;
+      });
+    } else {
+      result.add(widget.documentSnapshot.id);
+      prefs.setStringList("favorites", result);
+      setState(() {
+        isFavorite = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      getFavorite();
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +95,20 @@ class _DetailPageState extends State<DetailPage> {
               color: Colors.black,
             ),
           ),
+          actions: [
+            IconButton(
+              onPressed: () => addRemoveFavorite(),
+              icon: isFavorite
+                  ? const Icon(
+                      Icons.favorite,
+                      color: Colors.redAccent,
+                    )
+                  : const Icon(
+                      Icons.favorite_border,
+                      color: Colors.black,
+                    ),
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: StreamBuilder(

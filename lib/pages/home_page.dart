@@ -1,6 +1,7 @@
 import 'package:camera_market_app/pages/about_page.dart';
 import 'package:camera_market_app/pages/admin_page/admin_page.dart';
 import 'package:camera_market_app/pages/catalog_page.dart';
+import 'package:camera_market_app/pages/favorite_page.dart';
 import 'package:camera_market_app/pages/recommendation_page.dart';
 import 'package:flutter/material.dart';
 
@@ -15,8 +16,17 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          SizedBox(
-            height: size.height * 0.1,
+          const Spacer(),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const FavoritePage(),
+                ),
+              ),
+              icon: const Icon(Icons.favorite),
+            ),
           ),
           SizedBox(
             height: size.height * 0.2,
@@ -33,12 +43,10 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const Text(
                   "Temukan Kamera Terbaik Kamu",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 30),
               ],
             ),
@@ -53,24 +61,25 @@ class HomePage extends StatelessWidget {
               ),
             ),
             height: size.height * .7,
-
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     HomeContainer(
                       icon: Image.asset('assets/icons/tumbup.png'),
                       nama: 'Rekomendasi',
-                      tujuan: () => Navigator.pushNamed(context, RecommendationPage.routeName),
+                      tujuan: () => Navigator.pushNamed(
+                          context, RecommendationPage.routeName),
                     ),
                     HomeContainer(
                       icon: Image.asset('assets/icons/newspaper.png'),
                       nama: 'Katalog',
-                      tujuan: () => Navigator.pushNamed(context, CatalogPage.routeName),
-                    )],
+                      tujuan: () =>
+                          Navigator.pushNamed(context, CatalogPage.routeName),
+                    )
+                  ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -78,13 +87,16 @@ class HomePage extends StatelessWidget {
                     HomeContainer(
                       icon: Image.asset('assets/icons/info.png'),
                       nama: 'Tentang',
-                      tujuan: () => Navigator.pushNamed(context, AboutPage.routeName),
+                      tujuan: () =>
+                          Navigator.pushNamed(context, AboutPage.routeName),
                     ),
                     HomeContainer(
                       icon: Image.asset('assets/icons/user.png'),
                       nama: 'Admin',
-                      tujuan: () => Navigator.pushNamed(context, AdminPage.routeName),
-                    )],
+                      tujuan: () =>
+                          Navigator.pushNamed(context, AdminPage.routeName),
+                    )
+                  ],
                 )
               ],
             ),
@@ -122,7 +134,9 @@ class HomeContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
-            const SizedBox(height: 15,),
+            const SizedBox(
+              height: 15,
+            ),
             Text(
               nama,
               style: const TextStyle(

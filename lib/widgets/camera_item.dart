@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class CameraItem extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot;
   final double? q;
+  final Function()? onTap;
 
   const CameraItem({
     super.key,
     required this.documentSnapshot,
     this.q,
+    this.onTap,
   });
 
   @override
@@ -17,12 +19,14 @@ class CameraItem extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DetailPage(documentSnapshot: documentSnapshot),
-        ),
-      ),
+      onTap: onTap ??
+          () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      DetailPage(documentSnapshot: documentSnapshot),
+                ),
+              ),
       child: Container(
         margin: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
